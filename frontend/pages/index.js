@@ -3,13 +3,25 @@ import Layout from '../components/Layout'
 import LanguageSwitch from '../components/LanguageSwitch'
 import { useTranslation } from '../utils/i18n'
 import ProductCard from '../components/ProductCard'
+import { useEffect } from 'react'
+import { useRouter } from 'next/router'
+import { useApp } from '../services/store'
 import FeatureBlock from '../components/FeatureBlock'
 
 export default function Home() {
   const { t } = useTranslation()
+  const router = useRouter()
+  const { profile } = useApp()
+
+  useEffect(()=>{
+    // If not logged in (no profile), send visitor to prelogin landing
+    if (!profile) router.replace('/prelogin')
+  }, [profile])
+  if (!profile) return null
+
   return (
     <Layout>
-  <div className="max-w-5xl mx-auto text-center py-20">
+      <div className="max-w-5xl mx-auto text-center py-20">
         <h1 className="text-4xl font-bold mb-4">{t('appName')}</h1>
         <p className="text-lg text-gray-600 mb-8">{t('tagline')}</p>
 
