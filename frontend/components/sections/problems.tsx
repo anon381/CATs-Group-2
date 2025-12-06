@@ -48,7 +48,7 @@ export default function Problems() {
               className="flex-shrink-0 w-96 h-80 bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition-shadow duration-300 border border-slate-200 flex flex-col"
             >
               <div className="flex items-start gap-4 flex-col">
-                <div className="text-4xl">⚠️</div>
+                <div className="text-4xl"></div>
                 <div className="flex-1 flex flex-col gap-2">
                   <p className="text-slate-900 font-bold text-lg leading-tight">{problem.title}</p>
                   <p className="text-slate-600 text-sm leading-relaxed flex-1">{problem.description}</p>
