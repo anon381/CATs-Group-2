@@ -3,22 +3,22 @@ import { Star } from "lucide-react"
 const testimonials = [
   {
     name: "Dr. Rita Tilaye",
-    role: "Chief Doctor, Ethiopia",
+    role: "Chief Doctor, Addis Ababa, Ethiopia",
     image: "/dr%20rita.png",
     quote:
       "Still early, but the referral flow already feels faster. If they land the remaining features, this could remove a lot of friction for our team.",
   },
   {
     name: "Dr. Saron Leulkal",
-    role: "Health Post Coordinator, Addis Ababa",
+    role: "Health Post Coordinator, Portland, USA",
     image: "/dr%20saron.png",
     quote:
-      "We’re piloting it with a few sites. The promise of consistent patient histories across facilities is exactly what we need—looking forward to the full rollout.",
+      "The promise of consistent patient histories across facilities is exactly what we need—looking forward to the full rollout.",
   },
   {
     name: "Ms. Nadab",
     role: "Patient, Digital Healthcare Advocate",
-    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
+    image: "/nadab.png",
     quote:
       "Even in beta, seeing my records in one place is reassuring. If they keep this pace, it’ll be a game changer for patients like me.",
   },
