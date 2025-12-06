@@ -29,9 +29,7 @@ export default function CTA() {
              
             </div>
 
-            <p className="mt-8 text-sm text-muted-foreground">
-              No credit card required. Start free and upgrade anytime.
-            </p>
+            
           </div>
         </div>
       </div>
