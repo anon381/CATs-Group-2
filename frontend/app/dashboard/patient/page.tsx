@@ -1,222 +1,221 @@
-import { RetroGrid } from "@/components/ui/retro-grid"
+import { cookies } from "next/headers"
+import { SidebarNav } from "./sidebar-nav"
+import { ChangeButton } from "./change-button"
 
-export default function PatientDashboard() {
-  const timeline = [
-    { date: "2025-02-14", title: "Follow-up", detail: "Spine MRI reviewed, stable." },
-    { date: "2024-11-01", title: "Surgery", detail: "Lumbar microdiscectomy completed." },
-    { date: "2024-08-10", title: "Consult", detail: "Initial neurology consultation." },
-  ]
+type PatientProfile = {
+  name?: string
+  email?: string
+  doctor?: { name?: string; specialty?: string; phone?: string; email?: string }
+  data?: { weight?: string; height?: string; blood?: string }
+}
 
-  const stats = [
-    { label: "Upcoming", value: "2 appointments", tone: "primary" },
-    { label: "Medications", value: "2 active", tone: "muted" },
-    { label: "Alerts", value: "None", tone: "success" },
-  ]
+const getInitials = (name?: string) => {
+  if (!name) return "--"
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "--"
+}
 
-  const meds = [
-    { name: "Gabapentin", dose: "300mg", note: "Twice daily" },
-    { name: "Ibuprofen", dose: "400mg", note: "As needed for pain" },
-  ]
+async function getPatientFromAuth(): Promise<PatientProfile | null> {
+  try {
+    const store = await cookies()
+    const raw = store.get("patient_profile")?.value
+    if (!raw) return null
 
+    // Some auth providers URI-encode cookie payloads; decode defensively.
+    const decoded = (() => {
+      try {
+        return decodeURIComponent(raw)
+      } catch {
+        return raw
+      }
+    })()
+
+    return JSON.parse(decoded) as PatientProfile
+  } catch {
+    // Swallow any malformed cookie or parsing issues to avoid noisy console errors.
+    return null
+  }
+}
+
+export default async function PatientDashboard() {
+  const patient = (await getPatientFromAuth()) ?? {}
+  const patientName = patient.name || "Patient"
+  const patientEmail = patient.email || ""
+  const patientInitials = getInitials(patientName)
+  const doctorName = patient.doctor?.name || "Your doctor"
+  const doctorSpecialty = patient.doctor?.specialty || "Care team"
+  const doctorPhone = patient.doctor?.phone || "+1-000-000-0000"
+  const doctorEmail = patient.doctor?.email || patientEmail || "care@example.com"
+  const dataWeight = patient.data?.weight || "--"
+  const dataHeight = patient.data?.height || "--"
+  const dataBlood = patient.data?.blood || "--"
   const reminders = [
-    { title: "Take morning meds", detail: "Gabapentin 300mg", when: "Today 8:00 AM" },
-    { title: "Refill Ibuprofen", detail: "Order 30 tablets", when: "Due in 3 days" },
-    { title: "Prep for visit", detail: "Bring MRI images", when: "Next visit" },
+    { title: "Order drugs", detail: "Refill prescription", when: "07.06.2025" },
+    { title: "Start course", detail: "Begin new regimen", when: "10.06.2025" },
+    { title: "Blood test", detail: "Routine labs", when: "12.06.2025" },
+    { title: "Diagnostic", detail: "CT scan follow-up", when: "01.09.2025" },
+    { title: "Took tests", detail: "Awaiting results", when: "08.09.2025" },
+    { title: "Consultation", detail: "General review", when: "14.09.2025" },
+    { title: "Diagnostic", detail: "Echo review", when: "20.09.2025" },
   ]
 
-  const vitals = [
-    { label: "Blood Pressure", value: "118/76", note: "Stable" },
-    { label: "Weight", value: "72.4 kg", note: "-0.4 kg vs last" },
-    { label: "Heart Rate", value: "68 bpm", note: "Resting" },
+  const navItems = [
+    { label: "Overview", href: "#overview" },
+    { label: "Doctor", href: "#doctor" },
+    { label: "Health Data", href: "#data" },
+    { label: "Actions", href: "#actions" },
+    { label: "Reminders", href: "#reminders" },
   ]
 
-  const sparklinePoints = [0, 4, 2, 5, 3, 6, 4]
-
-  const labs = [
-    { name: "CBC", date: "2025-01-05", status: "Normal" },
-    { name: "MRI Spine", date: "2024-12-20", status: "Reviewed" },
-  ]
-
-  const appointments = [
-    { date: "2025-03-12", with: "Dr. Abebe (Neuro)", type: "Follow-up" },
-    { date: "2025-04-02", with: "PT Clinic", type: "Physiotherapy" },
+  const quickActions = [
+    { title: "Diagnostic", desc: "List of diseases" },
+    { title: "Drugs", desc: "Archive of tests" },
+    { title: "Tests", desc: "Prescribed medicine" },
   ]
 
   return (
-    <main className="relative min-h-screen bg-background px-6 py-12 overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.12),transparent_32%),radial-gradient(circle_at_75%_10%,rgba(59,130,246,0.08),transparent_38%),radial-gradient(circle_at_50%_60%,rgba(59,130,246,0.06),transparent_45%)]" />
-      <RetroGrid className="opacity-45" angle={70} />
-      <div className="relative z-10 mx-auto max-w-7xl space-y-10">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="w-full flex justify-end">
-            <a
-              href="/"
-              className="inline-flex items-center justify-center rounded-lg border border-border px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted"
-            >
-              ← Home
-            </a>
-          </div>
-          <div className="space-y-2 rounded-2xl border border-border bg-muted/30 px-5 py-4 shadow-sm">
-            <p className="text-base font-semibold uppercase tracking-wide text-primary">Patient Dashboard</p>
-            <h1 className="text-4xl font-bold leading-tight bg-gradient-to-r from-primary via-foreground to-foreground/80 bg-clip-text text-transparent sm:text-5xl">
-              Welcome back
-            </h1>
-          </div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-3">
-          {stats.map((item) => (
-            <div
-              key={item.label}
-              className="rounded-2xl border border-border bg-card px-4 py-4 shadow-sm"
-            >
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">{item.label}</p>
-              <p className="mt-2 text-lg font-semibold text-foreground">{item.value}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="grid gap-8 lg:grid-cols-12">
-          <div className="lg:col-span-7 space-y-6">
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-foreground">Medical history timeline</h2>
-                <span className="text-xs text-muted-foreground">Latest first</span>
+    <main className="min-h-screen bg-white text-slate-900">
+      <div className="flex min-h-screen">
+        {/* Fixed left sidebar */}
+        <aside className="fixed left-0 top-0 h-screen w-72 flex flex-col justify-between border-r border-slate-200 bg-white px-6 py-7 shadow-sm">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-blue-200 text-sm font-semibold text-blue-700">
+                {patientInitials}
               </div>
-              <div className="mt-4 space-y-4">
-                {timeline.map((item) => (
-                  <div key={item.date} className="flex gap-4 rounded-xl border border-border bg-background p-4">
-                    <div className="mt-1 h-10 w-10 rounded-full bg-primary/10 text-center text-xs font-semibold text-primary leading-10">
-                      {item.date.slice(5)}
+              <div>
+                <p className="font-semibold">{patientName}</p>
+                {patientEmail ? <p className="text-xs text-slate-500">{patientEmail}</p> : null}
+              </div>
+            </div>
+
+            <SidebarNav items={navItems} />
+          </div>
+
+          <div className="space-y-2 text-sm">
+            <a href="#" className="block rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100">Account</a>
+            <a href="#" className="block rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100">Settings</a>
+            <a href="#" className="block rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100">Help center</a>
+          </div>
+        </aside>
+
+        {/* Main and right column */}
+        <div className="flex-1 ml-72">
+          <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-10">
+            <div className="grid gap-6 lg:grid-cols-[1fr,320px]">
+              {/* Center content */}
+              <div className="space-y-6">
+                {/* Header */}
+                <div id="overview" className="flex flex-col gap-4 scroll-m-24 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="space-y-1">
+                    <h1 className="text-3xl font-bold">Hello, {patientName}!</h1>
+                    <p className="text-sm text-slate-500">How are you feeling today?</p>
+                  </div>
+                  <div className="flex items-center gap-3 w-full lg:w-auto">
+                    <div className="flex-1 lg:w-64">
+                      <input
+                        type="text"
+                        placeholder="Global search"
+                        className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-100"
+                      />
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">{item.date}</p>
-                      <p className="text-base font-semibold text-foreground">{item.title}</p>
-                      <p className="text-sm text-muted-foreground">{item.detail}</p>
+                    <button className="h-10 w-10 rounded-full border border-slate-200 bg-white shadow-sm" aria-label="Notifications" />
+                  </div>
+                </div>
+
+                {/* Row 1: two cards */}
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div id="doctor" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm scroll-m-24">
+                    <div className="flex items-center justify-between mb-3 text-sm text-slate-500">
+                      <span>Your doctor</span>
+                      <ChangeButton label="Change" />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-blue-200 text-sm font-semibold text-blue-700">
+                        {getInitials(doctorName)}
+                      </div>
+                      <div>
+                        <p className="font-semibold">{doctorName}</p>
+                        <p className="text-xs text-slate-500">{doctorSpecialty}</p>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center gap-2 text-xs text-blue-600">
+                      <a href={`tel:${doctorPhone}`} className="rounded-full bg-blue-50 px-2 py-1">Call</a>
+                      <a href={`mailto:${doctorEmail}`} className="rounded-full bg-blue-50 px-2 py-1">Chat</a>
+                      <a href={`mailto:${doctorEmail}?subject=Video%20Visit%20Request`} className="rounded-full bg-blue-50 px-2 py-1">Video</a>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
 
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-              <p className="text-sm text-muted-foreground">Health tip</p>
-              <h3 className="text-lg font-semibold text-foreground">Small daily moves</h3>
-              <p className="mt-3 text-sm text-muted-foreground">
-                Take a 20-minute walk, hydrate with 2L of water, and stretch your lower back after long sitting blocks.
-              </p>
-              <div className="mt-4 rounded-lg bg-primary/5 px-3 py-2 text-xs text-primary">Updated weekly.</div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-5 space-y-6">
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">QR code profile</p>
-                  <h2 className="text-xl font-semibold text-foreground">Share securely</h2>
-                </div>
-                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">QR</span>
-              </div>
-              <div className="mt-5 flex items-center justify-center rounded-xl border border-dashed border-border bg-background p-10">
-                <div className="h-36 w-36 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10" />
-              </div>
-              <p className="mt-3 text-xs text-muted-foreground">Scan to share a read-only summary of your profile.</p>
-            </div>
-
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-foreground">Appointments</h3>
-              <ul className="mt-4 space-y-4">
-                {appointments.map((appt) => (
-                  <li key={`${appt.date}-${appt.with}`} className="rounded-xl bg-background px-4 py-3">
-                    <p className="font-semibold text-foreground">{appt.with}</p>
-                    <p className="text-sm text-muted-foreground">{appt.type}</p>
-                    <p className="text-xs text-muted-foreground">{appt.date}</p>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-5 rounded-xl bg-primary/5 p-4 text-sm text-primary">
-                Emergency contact: +251 911 223344
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid gap-8 lg:grid-cols-12">
-          <div className="lg:col-span-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-foreground">Medications</h3>
-            <ul className="mt-4 space-y-3">
-              {meds.map((med) => (
-                <li key={med.name} className="flex items-center justify-between rounded-lg bg-background px-3 py-2">
-                  <div>
-                    <p className="font-semibold text-foreground">{med.name}</p>
-                    <p className="text-xs text-muted-foreground">{med.note}</p>
+                  <div id="data" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm scroll-m-24">
+                    <div className="flex items-center justify-between mb-3 text-sm text-slate-500">
+                      <span>Your data</span>
+                      <ChangeButton label="Change" />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div>
+                        <p className="text-sm text-slate-500">Weight</p>
+                        <p className="text-lg font-semibold">{dataWeight}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-500">Height</p>
+                        <p className="text-lg font-semibold">{dataHeight}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-500">Blood</p>
+                        <p className="text-lg font-semibold">{dataBlood}</p>
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-xs font-semibold text-primary">{med.dose}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="lg:col-span-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-foreground">Lab results</h3>
-            <ul className="mt-4 space-y-3">
-              {labs.map((lab) => (
-                <li key={lab.name} className="flex items-center justify-between rounded-lg bg-background px-3 py-2">
-                  <div>
-                    <p className="font-semibold text-foreground">{lab.name}</p>
-                    <p className="text-xs text-muted-foreground">{lab.date}</p>
-                  </div>
-                  <span className="text-xs font-semibold text-primary">{lab.status}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="lg:col-span-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-foreground">Reminders & tasks</h3>
-            <ul className="mt-3 space-y-3 text-sm text-muted-foreground">
-              {reminders.map((item) => (
-                <li key={item.title} className="rounded-lg bg-background px-3 py-2">
-                  <p className="font-semibold text-foreground">{item.title}</p>
-                  <p>{item.detail}</p>
-                  <p className="text-xs text-muted-foreground">{item.when}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        <div className="grid gap-8 lg:grid-cols-12">
-          <div className="lg:col-span-5 rounded-2xl border border-border bg-card p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-foreground">Vitals & trends</h3>
-            <div className="mt-4 grid grid-cols-3 gap-3">
-              {vitals.map((vital) => (
-                <div key={vital.label} className="rounded-lg bg-background px-3 py-3">
-                  <p className="text-xs text-muted-foreground">{vital.label}</p>
-                  <p className="text-lg font-semibold text-foreground">{vital.value}</p>
-                  <p className="text-xs text-muted-foreground">{vital.note}</p>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          <div className="lg:col-span-7 rounded-2xl border border-border bg-card p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-foreground">Weight trend</h3>
-              <span className="text-xs text-muted-foreground">Last 7 readings</span>
-            </div>
-            <svg viewBox="0 0 140 60" className="mt-4 h-24 w-full text-primary" preserveAspectRatio="none">
-              <polyline
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                points={sparklinePoints.map((p, i) => `${(i / (sparklinePoints.length - 1)) * 140},${60 - p * 8}`).join(" ")}
-                vectorEffect="non-scaling-stroke"
-              />
-            </svg>
-            <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="inline-block h-2 w-2 rounded-full bg-primary" /> Weight (kg)
+                {/* Row 2: feature box */}
+                <div id="actions" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm scroll-m-24">
+                  <div className="grid gap-6 lg:grid-cols-5 items-center">
+                    <div className="lg:col-span-2 flex items-center justify-center">
+                      <div className="w-full max-w-xs rounded-2xl bg-gradient-to-br from-blue-50 via-white to-blue-100 p-10">
+                        <div className="h-28 w-full rounded-2xl border border-dashed border-blue-200 bg-white/70" />
+                      </div>
+                    </div>
+                    <div className="lg:col-span-3 grid gap-4 md:grid-cols-3">
+                      {quickActions.map((item) => (
+                        <div key={item.title} className="rounded-xl border border-slate-200 bg-slate-50 px-5 py-4">
+                          <p className="text-sm font-semibold">{item.title}</p>
+                          <p className="text-xs text-slate-500">{item.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right reminders */}
+              <div className="space-y-6">
+                <div id="reminders" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm scroll-m-24">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <p className="text-sm text-slate-500">Remind me</p>
+                      <p className="text-xs text-blue-600 font-semibold">4 tasks completed out of 10</p>
+                    </div>
+                    <a href="#" className="text-xs text-blue-600 font-semibold">This week</a>
+                  </div>
+                  <div className="space-y-3 text-sm text-slate-600">
+                    {reminders.map((item) => (
+                      <div key={item.title} className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+                        <div className="flex justify-between font-semibold">
+                          <span>{item.title}</span>
+                          <a href="#reminders" className="text-blue-600 text-xs">Change</a>
+                        </div>
+                        <p className="text-xs text-slate-500">{item.detail}</p>
+                        <p className="text-xs text-slate-400">{item.when}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
